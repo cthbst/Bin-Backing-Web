@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bin Packing Problem Solver</title>
+    <style>
+        /* Style for full-width input */
+        .full-width-input {
+            width: 90vw; /* Full viewport width */
+            padding: 3px; /* Adds padding for better appearance */
+            font-size: 16px; /* Increases the font size */
+            box-sizing: border-box; /* Includes padding in width */
+            margin: 20px; /* Resets margin */
+            position: relative; /* Allows for absolute positioning */
+            left: calc(-50vw + 50%); /* Center input in the viewport */
+        }
+        /* Optional body styles for visual effect */
+        body {
+            margin: 0; /* Removes default margin */
+            padding: 20px; /* Adds some padding */
+            background-color: #f4f4f4; /* Light background color */
+        }
+    </style>
     <script>
         function addX(S, D, x) {
             if (S.second + x > D) {
@@ -152,11 +170,11 @@
 <body>
     <h1>Bin Packing Problem Solver</h1>
     <form id="binPackingForm">
-        <label for="D">Bin Capacity (D):</label>
-        <input type="number" step="any" id="D" name="D" required><br><br>
+        <label for="D">Bin Capacity (D):</label><br>
+        <input type="number" step="any" class="full-width-input" id="D" name="D" required><br><br>
 
-        <label for="items">Item Sizes (separated by space):</label>
-        <input type="text" id="items" name="items" required><br><br>
+        <label for="items">Item Sizes (separated by space):</label><br>
+        <input type="text" id="items" class="full-width-input" name="items" required><br><br>
 
         <input type="submit" value="Solve">
     </form>
