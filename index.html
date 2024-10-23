@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bin Packing Problem Solver</title>
+    <script>
+        function addX(S, D, x) {
+            if (S.second + x > D) {
+                return { first: S.first + 1, second: x };
+            } else {
+                return { first: S.first, second: S.second + x };
+            }
+        }
+
+        function refineOneTwo(ans) {
+            let k = 0;
+            let a = [];
+            let ret = [];
+            for (let vec of ans) {
+                if (vec.length > 2) {
+                    ret.push(vec);
+                } else {
+                    k++;
+                    a.push(...vec);
+                }
+            }
+            a.sort((x, y) => x - y);
+            let cntPair = a.length - k;
+            for (let i = 0; i < cntPair; i++) {
+                ret.push([a[i], a[2 * cntPair - 1 - i]]);
+            }
+            for (let i = 2 * cntPair; i < a.length; i++) {
+                ret.push([a[i]]);
+            }
+            return ret;
+        }
+
+        function solveOneTwo(D, a) {
+            let n = a.length;
+            a.sort((x, y) => x - y);
+            let l = 0, r = n - 1;
+            let cntPair = 0;
+            while (l <= r) {
+                if (l === r) break;
+                if (a[l] + a[r] > D) {
+                    r--;
+                } else {
+                    cntPair++;
+                    l++;
+                    r--;
+                }
+            }
+            let ans = [];
+            for (let i = 0; i < cntPair; i++) {
+                ans.push([a[i], a[cntPair * 2 - 1 - i]]);
+            }
+            for (let i = 2 * cntPair; i < n; i++) {
+                ans.push([a[i]]);
+            }
+            return ans;
+        }
+
+        function getSubVector(S, a) {
+            let sub = [];
+            for (let i = 0; i < a.length; i++) {
+                if (S & (1 << i)) {
+                    sub.push(a[i]);
+                }
+            }
+            return sub;
+        }
+
+        function solve(D, a) {
+            n = a.length;
+            let mx = Math.max(...a);
+            if (mx > D) {
+                return [];
+            }
+            let M = 1 << n;
+            let dp = Array(M).fill({ first: n, second: D });
+            let ch = Array(M).fill(0);
+
+            dp[0] = { first: 0, second: D };
+            for (let S = 1; S < M; S++) {
+                for (let i = 0; i < n; i++) {
+                    if (S & (1 << i)) {
+                        let T = S - (1 << i);
+                        let tmp = addX(dp[T], D, a[i]);
+                        if (dp[S].first > tmp.first) {
+                            dp[S] = tmp;
+                            ch[S] = i;
+                        }
+                    }
+                }
+            }
+
+            let ansNumGroup = dp[M - 1].first;
+            let bestSub = 0;
+            for (let S = M - 1; S >= 0; S--) {
+                let sub = getSubVector(S, a);
+                let ansSub = solveOneTwo(D, sub).length;
+                let CompS = (M - 1) ^ S;
+                if (ansSub + dp[CompS].first === ansNumGroup) {
+                    bestSub = S;
+                    break;
+                }
+            }
+
+            let ans = solveOneTwo(D, getSubVector(bestSub, a));
+
+            let w = (M - 1) ^ bestSub;
+            let sum = D + 1;
+            while (w > 0) {
+                let i = ch[w];
+                if (sum + a[i] > D) {
+                    sum = 0;
+                    ans.push([]);
+                }
+                sum += a[i];
+                ans[ans.length - 1].push(a[i]);
+                w -= (1 << i);
+            }
+            return ans;
+        }
+
+        window.onload = function () {
+            document.getElementById('binPackingForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const D = parseFloat(document.getElementById('D').value);
+                const items = document.getElementById('items').value.replace(/\|/g, ' ').replace(/\s+/g, ' ').trim().split(' ').map(parseFloat);
+
+                const result = solve(D, items);
+
+                const formattedOutput = result.map(subArray => subArray.join(' ')).join(' | ');
+                document.getElementById('result').textContent = formattedOutput;
+
+                const resultLength = result.length;
+                document.getElementById('resultLength').textContent = `Number of bins used: ${resultLength}`;
+
+                const maxElement = Math.max(...items);
+                if (D < maxElement) {
+                document.getElementById('result').textContent += `\nWarning: Capacity D (${D}) is less than the maximum item (${maxElement}).`;
+        }
+
+
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Bin Packing Problem Solver</h1>
+    <form id="binPackingForm">
+        <label for="D">Bin Capacity (D):</label>
+        <input type="number" step="any" id="D" name="D" required><br><br>
+
+        <label for="items">Item Sizes (separated by space):</label>
+        <input type="text" id="items" name="items" required><br><br>
+
+        <input type="submit" value="Solve">
+    </form>
+
+    <h2>Result:</h2>
+    <pre id="resultLength"></pre>
+    <pre id="result"></pre>
+
+</body></html>
+
